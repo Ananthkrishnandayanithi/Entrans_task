@@ -37,6 +37,9 @@ Developed a function that:
 Takes a year as input.
 Filters the dataset for that year.
 Plots a histogram for the filtered data.
+![image](https://github.com/user-attachments/assets/ffec5f59-59ca-4eed-a884-acd4cfdb9127)
+
+
 
 Task 4: Gender Distribution
 
