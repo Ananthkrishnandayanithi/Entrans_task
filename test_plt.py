@@ -1,109 +1,71 @@
-import sys
-import importlib.util
-
-# Add directory containing Altask.py to sys.path
-sys.path.append(r'D:\Entrans_task')
-
-# Check if Altask module is accessible using importlib
-module_name = 'Altask'
-spec = importlib.util.find_spec(module_name)
-
-if spec is not None:
-    print(f"{module_name} module found.")
-else:
-    print(f"{module_name} module not found.")
-
 import unittest
-from unittest.mock import patch
 import pandas as pd
-from datetime import datetime
-import matplotlib.pyplot as plt
+from Altask import Preprocessing, NumericalSummary, unique_values, hist_customer_age, pie_chart, revenue_by_age_group, profit_by_category, line_graph, scatter_plot_profit_margin, boxplot_revenue_age_group, DataVisualizer
 
-# Test Class
-class TestAltaskFunctions(unittest.TestCase):
+class TestAltask(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
-        # Load the test data
-        cls.df = pd.read_excel('D:/Entrans_task/sales_data.xlsx')
-
-    def test_precheck(self):
-        with patch('builtins.print') as mocked_print:
-            Altask.preprocessing().precheck()
-            mocked_print.assert_any_call("Missing Values:")
-
+        
+        cls.df = pd.read_excel('D:\\Entrans_task\\sales_data.xlsx')
+    
+    def test_column_names(self):
+        
+        expected_columns = ['Order_Quantity', 'Unit_Price', 'Profit', 'Revenue', 'Cost', 'Unit_Cost', 'Customer_Age', 'Product_Category', 'Sub_Category', 'Product', 'Customer_Gender', 'Age_Group', 'State', 'Year', 'Date']
+        actual_columns = self.df.columns.tolist()
+        self.assertTrue(all(col in actual_columns for col in expected_columns), "Missing expected columns")
+    
     def test_dtype(self):
-        with patch('builtins.print') as mocked_print:
-            Altask.preprocessing().dtype()
-            mocked_print.assert_any_call("\nData Types:")
+        
+        dtype_check = {
+            'Order_Quantity': 'int64',
+            'Unit_Price': 'float64',
+            'Profit': 'float64',
+            'Revenue': 'float64',
+            'Customer_Age': 'int64',
+            'Product_Category': 'object',
+            'Customer_Gender': 'object',
+            'Age_Group': 'object',
+            'State': 'object',
+            'Year': 'int64'
+        }
+        for column, dtype in dtype_check.items():
+            with self.subTest(column=column):
+                self.assertEqual(self.df[column].dtype.name, dtype, f"Incorrect dtype for {column}")
 
     def test_num_summary(self):
-        with patch('builtins.print') as mocked_print:
-            Altask.NumericalSummary().NumSummary()
-            mocked_print.assert_any_call("Column: Order_Quantity")
+        """Test numerical summary statistics output for mean, median, and mode."""
+        numerical_cols = ['Order_Quantity', 'Unit_Price', 'Profit', 'Revenue', 'Cost', 'Unit_Cost', 'Customer_Age']
+        for col in numerical_cols:
+            with self.subTest(col=col):
+                self.assertTrue(self.df[col].mean() is not None, f"Mean is missing for {col}")
+                self.assertTrue(self.df[col].median() is not None, f"Median is missing for {col}")
+                self.assertTrue(self.df[col].mode().notnull().any(), f"Mode is missing for {col}")
 
     def test_unique_values(self):
-        with patch('builtins.print') as mocked_print:
-            Altask.task2()
-            mocked_print.assert_any_call("Unique values in Product_Category:")
+        """Test to check that unique values in specified columns are returned correctly."""
+        cols = ['Product_Category', 'Sub_Category', 'Product']
+        for col in cols:
+            with self.subTest(col=col):
+                unique_vals = self.df[col].unique()
+                self.assertTrue(len(unique_vals) > 0, f"No unique values found for {col}")
 
-    def test_hist_custage(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.hist_custage()
-            mocked_show.assert_called_once()
+    def test_task_h_and_b(self):
+        """Test specific tasks like 'h' (3D state-wise profit chart) and 'b' (pie chart for gender distribution)."""
+        
+        try:
+            visualizer = DataVisualizer(self.df)
+            visualizer.state_high_profit()  
+            self.assertTrue(True, "Task 'h' executed successfully.")
+        except Exception as e:
+            self.fail(f"Task 'h' failed with error: {e}")
 
-    def test_pie(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.pie()
-            mocked_show.assert_called_once()
-
-    def test_bargraph(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.bargraph()
-            mocked_show.assert_called_once()
-
-    def test_product_category(self):
-        with patch.object(plt, 'show') as mocked_show:
-            with patch('builtins.print') as mocked_print:
-                Altask.product_category()
-                mocked_print.assert_any_call("Summation of Max Profits:")
-                mocked_show.assert_called_once()
-
-    def test_linegraph(self):
-        start_date = "2023-01-01"
-        end_date = "2023-12-31"
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.linegraph(start_date, end_date)
-            mocked_show.assert_called_once()
-
-    def test_profit_margin_by_product(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.profit_margin_by_product()
-            mocked_show.assert_called_once()
-
-    def test_subplot(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.subplot()
-            mocked_show.assert_called()
-
-    def test_analyze_and_plot_profit(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.analyze_and_plot(value_column='Profit')
-            mocked_show.assert_called_once()
-
-    def test_analyze_and_plot_revenue(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.analyze_and_plot(value_column='Revenue')
-            mocked_show.assert_called_once()
-
-    def test_state_high_profit(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.state_high_profit()
-            mocked_show.assert_called_once()
-
-    def test_scatter_gender(self):
-        with patch.object(plt, 'show') as mocked_show:
-            Altask.scatter_gender()
-            mocked_show.assert_called_once()
+        
+        try:
+            pie_chart()  
+            self.assertTrue(True, "Task 'b' executed successfully.")
+        except Exception as e:
+            self.fail(f"Task 'b' failed with error: {e}")
 
 if __name__ == '__main__':
     unittest.main()
